@@ -71,7 +71,7 @@ drawBoard win board = pictures (map pictures drawCells)
 
 -- | Нарисовать фишку в клетке поля (если она там есть).
 drawCell :: Maybe Mark -> Cell -> Picture
-drawCell win Nothing     = blank
+drawCell _ Nothing       = blank
 drawCell win (Just mark) = color markColor (drawMark mark)
   where
     markColor
@@ -147,7 +147,7 @@ winner board = getFirstWinner (map lineWinner allLines)
     cols = transpose board
     diagonals = lefts board ++ rights board
 
-    lefts board = leftTops board ++ leftBottoms board
+    lefts b = leftTops b ++ leftBottoms b
     rights = lefts . reverse
 
     leftTops    = transpose . zipWith drop [0..]
