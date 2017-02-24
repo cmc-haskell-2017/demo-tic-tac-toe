@@ -37,23 +37,49 @@ initGame = Game
 
 -- | Отобразить игровое поле.
 drawGame :: Game -> Picture
-drawGame _ = pictures
-  [ drawGrid ]
+drawGame game = translate (-w) (-h) (scale c c (pictures
+  [ drawGrid
+  , drawBoard (gameBoard game)
+  ]))
+  where
+    c = fromIntegral cellSize
+    w = fromIntegral screenWidth  / 2
+    h = fromIntegral screenHeight / 2
 
 -- | Сетка игрового поля.
 drawGrid :: Picture
-drawGrid = color white (translate (-w) (-h) (scale c c (pictures (hs ++ vs))))
+drawGrid = color white (pictures (hs ++ vs))
   where
     hs = map (\j -> line [(0, j), (n, j)]) [1..m - 1]
     vs = map (\i -> line [(i, 0), (i, m)]) [1..n - 1]
 
-    c = fromIntegral cellSize
-
     n = fromIntegral boardWidth
     m = fromIntegral boardHeight
 
-    w = fromIntegral screenWidth  / 2
-    h = fromIntegral screenHeight / 2
+-- | Нарисовать фишки на игровом поле.
+drawBoard :: Board -> Picture
+drawBoard board = pictures (map pictures drawCells)
+  where
+    drawCells = map drawRow (zip [0..] board)
+    drawRow (j, row) = map drawCellAt (zip [0..] row)
+      where
+        drawCellAt (i, cell) = translate (0.5 + i) (0.5 + j) (drawCell cell)
+
+-- | Нарисовать фишку в клетке поля (если она там есть).
+drawCell :: Cell -> Picture
+drawCell Nothing     = blank
+drawCell (Just mark) = drawMark mark
+
+-- | Нарисовать фишку.
+drawMark :: Mark -> Picture
+drawMark X = color white unitX
+  where
+    unitX = pictures
+      [ polygon [(-0.4,  0.3), (-0.3,  0.4), ( 0.4, -0.3), ( 0.3, -0.4)]
+      , polygon [(-0.4, -0.3), (-0.3, -0.4), ( 0.4,  0.3), ( 0.3,  0.4)] ]
+drawMark O = color white unitO
+  where
+    unitO = thickCircle 0.3 0.1
 
 -- | Обработка событий.
 handleGame :: Event -> Game -> Game
