@@ -11,16 +11,49 @@ runTicTacToe = do
     bgColor = black   -- цвет фона
     fps     = 60      -- кол-во кадров в секунду
 
+-- | Фишки игроков.
+data Mark = X | O
+
+-- | Клетка игрового поля.
+type Cell = Maybe Mark
+
+-- | Игровое поле.
+type Board = [[Cell]]
+
 -- | Состояние игры.
 data Game = Game
+  { gameBoard  :: Board       -- ^ Игровое поле.
+  , gamePlayer :: Maybe Mark  -- ^ Чей ход? Если все клетки заняты или есть победитель, то 'Nothing'.
+  }
 
 -- | Начальное состояние игры.
+-- Игровое поле — пусто.
+-- Первый игрок ходит за крестики.
 initGame :: Game
 initGame = Game
+  { gameBoard  = replicate boardHeight (replicate boardWidth Nothing)
+  , gamePlayer = Just X
+  }
 
 -- | Отобразить игровое поле.
 drawGame :: Game -> Picture
-drawGame _ = blank
+drawGame _ = pictures
+  [ drawGrid ]
+
+-- | Сетка игрового поля.
+drawGrid :: Picture
+drawGrid = color white (translate (-w) (-h) (scale c c (pictures (hs ++ vs))))
+  where
+    hs = map (\j -> line [(0, j), (n, j)]) [1..m - 1]
+    vs = map (\i -> line [(i, 0), (i, m)]) [1..n - 1]
+
+    c = fromIntegral cellSize
+
+    n = fromIntegral boardWidth
+    m = fromIntegral boardHeight
+
+    w = fromIntegral screenWidth  / 2
+    h = fromIntegral screenHeight / 2
 
 -- | Обработка событий.
 handleGame :: Event -> Game -> Game
