@@ -8,7 +8,7 @@ runTicTacToe :: IO ()
 runTicTacToe = do
   play display bgColor fps initGame drawGame handleGame updateGame
   where
-    display = InWindow "Flappy Lambda" (screenWidth, screenHeight) (200, 200)
+    display = InWindow "Крестики-нолики" (screenWidth, screenHeight) (200, 200)
     bgColor = black   -- цвет фона
     fps     = 60      -- кол-во кадров в секунду
 
@@ -177,10 +177,10 @@ winner board = getFirstWinner (map lineWinner allLines)
         first x       _ = x
 
     lineWinner :: Eq a => [Maybe a] -> Maybe a
-    lineWinner = getWinnerSegment . segments
+    lineWinner = winnerSegment . segments
 
-    getWinnerSegment :: [(Maybe a, Int)] -> Maybe a
-    getWinnerSegment = foldr compareSegments Nothing
+    winnerSegment :: [(Maybe a, Int)] -> Maybe a
+    winnerSegment = foldr compareSegments Nothing
       where
         compareSegments (Just x, n) _
           | n >= winnerStreak = Just x
@@ -211,15 +211,15 @@ updateGame _ = id
 
 -- | Ширина игрового поля в клетках.
 boardWidth :: Int
-boardWidth  = 5
+boardWidth  = 7
 
 -- | Высота игрового поля в клетках.
 boardHeight :: Int
-boardHeight = 5
+boardHeight = 6
 
 -- | Сколько фишек подряд необходимо для выигрыша.
 winnerStreak :: Int
-winnerStreak = 5
+winnerStreak = 4
 
 -- | Размер одной клетки в пикселях.
 cellSize :: Int
