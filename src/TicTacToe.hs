@@ -83,7 +83,47 @@ drawMark O = color white unitO
 
 -- | Обработка событий.
 handleGame :: Event -> Game -> Game
+handleGame (EventKey (MouseButton LeftButton) _ _ mouse) = placeMark (mouseToCell mouse)
 handleGame _ = id
+
+-- | Поставить фишку и сменить игрока (если возможно).
+placeMark :: (Int, Int) -> Game -> Game
+placeMark (i, j) game = case modifyAt j (modifyAt i g) (gameBoard game) of
+  Just newBoard -> game
+    { gameBoard  = newBoard
+    , gamePlayer = newPlayer (gamePlayer game)
+    }
+  _ -> game   -- если поставить фишку нельзя — ничего не изменяется
+  where
+    g Nothing = Just (gamePlayer game)
+    g _       = Nothing
+
+    newPlayer Nothing  = Nothing
+    newPlayer (Just m) = Just (switchPlayer m)
+
+-- | Сменить текущего игрока.
+switchPlayer :: Mark -> Mark
+switchPlayer X = O
+switchPlayer O = X
+
+-- | Применить преобразование к элементу списка
+-- с заданным индексом. Если преобразование не удалось — вернуть 'Nothing'.
+-- Иначе вернуть преобразованный список.
+modifyAt :: Int -> (a -> Maybe a) -> [a] -> Maybe [a]
+modifyAt _ _ []     = Nothing
+modifyAt 0 f (x:xs) = case f x of
+  Nothing -> Nothing
+  Just y  -> Just (y : xs)
+modifyAt i f (x:xs) = case modifyAt (i - 1) f xs of
+  Nothing -> Nothing
+  Just ys -> Just (x : ys)
+
+-- | Получить координаты клетки под мышкой.
+mouseToCell :: Point -> (Int, Int)
+mouseToCell (x, y) = (i, j)
+  where
+    i = floor (x + fromIntegral screenWidth  / 2) `div` cellSize
+    j = floor (y + fromIntegral screenHeight / 2) `div` cellSize
 
 -- | Обновление игры.
 -- В этой игре все изменения происходят только по действиям игрока,
