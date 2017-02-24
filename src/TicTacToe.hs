@@ -67,16 +67,21 @@ drawBoard win board = pictures (map pictures drawCells)
     drawCells = map drawRow (zip [0..] board)
     drawRow (j, row) = map drawCellAt (zip [0..] row)
       where
-        drawCellAt (i, cell) = translate (0.5 + i) (0.5 + j) (drawCell win cell)
+        drawCellAt (i, cell) = translate (0.5 + i) (0.5 + j)
+          (drawCell (estimate board) win cell)
 
 -- | Нарисовать фишку в клетке поля (если она там есть).
-drawCell :: Maybe Mark -> Cell -> Picture
-drawCell _ Nothing       = blank
-drawCell win (Just mark) = color markColor (drawMark mark)
+drawCell :: (Int, Int) -> Maybe Mark -> Cell -> Picture
+drawCell _ _ Nothing = blank
+drawCell (x, o) win (Just mark)
+  = color markColor (drawMark mark)
   where
     markColor
       | win == Just mark = light orange
-      | otherwise        = white
+      | otherwise = case mark of
+          X | x < o -> greyN (max 0.5 (1 - fromIntegral (o - x) / 10))
+          O | x > o -> greyN (max 0.5 (1 - fromIntegral (x - o) / 10))
+          _         -> white
 
 -- | Нарисовать фишку.
 drawMark :: Mark -> Picture
@@ -151,7 +156,7 @@ winner board = getFirstWinner (map lineWinner allLines)
     rights = lefts . reverse
 
     leftTops    = transpose . zipWith drop [0..]
-    leftBottoms = leftTops . transpose
+    leftBottoms = drop 1 . leftTops . transpose
 
     getFirstWinner :: [Maybe a] -> Maybe a
     getFirstWinner = foldr first Nothing
@@ -175,6 +180,12 @@ winner board = getFirstWinner (map lineWinner allLines)
       where
         segment = (x, 1 + length (takeWhile (== x) xs))
         rest    = segments (dropWhile (== x) xs)
+
+-- | Оценить состояние игрового поля, а именно
+-- вычислить сумму длин сегментов для крестиков и ноликов.
+-- Сегменты длины 1 не учитываются при подсчёте.
+estimate :: Board -> (Int, Int)
+estimate _ = (0, 0)
 
 -- | Обновление игры.
 -- В этой игре все изменения происходят только по действиям игрока,
