@@ -112,7 +112,7 @@ drawO = thickCircle 0.3 0.1
 
 -- | Обработка событий.
 handleGame :: Event -> Game -> Game
-handleGame (EventKey (MouseButton LeftButton) _ _ mouse) = placeMark (mouseToCell mouse)
+handleGame (EventKey (MouseButton LeftButton) Down _ mouse) = placeMark (mouseToCell mouse)
 handleGame _ = id
 
 -- | Поставить фишку и сменить игрока (если возможно).
